@@ -1,0 +1,2 @@
+# GoldJS
+Projecto de LAP
