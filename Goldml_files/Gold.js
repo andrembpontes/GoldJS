@@ -12,7 +12,7 @@ var ctx, empty, ball, world, control;
 
 var Actor = EXTENDS(JSRoot, {
 	x: 0, y: 0,
-	kind: null,
+	kkind: null,
 	color: null,
 	INIT: function(x, y, kind, color) {
 		this.x = x;
