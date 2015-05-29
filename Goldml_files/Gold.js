@@ -3,6 +3,18 @@
 01234567890123456789012345678901234567890123456789012345678901234567890123456789
 */
 
+// GAME CONSTANTS
+var START_LIFES = 3;
+var START_LEVEL = 1;
+
+// GAME SCORES
+var SCORE_BRICK = 2
+var SCORE_KEY = 4
+var SCORE_LOCK = 4
+var SCORE_GOLD = 6
+var SCORE_UNUSED_SECOND = 1
+var SCORE_UNUSER_LIFE = 200
+
 // GLOBAL VARIABLES
 
 var ctx, empty, ball, world, control;
@@ -36,6 +48,9 @@ var Actor = EXTENDS(JSRoot, {
 		var image = GameImage.get("Empty", "").image;
 		world[this.x][this.y] = empty;
 		ctx.drawImage(image, this.x * ACTOR_PIXELS_X, this.y * ACTOR_PIXELS_Y);
+	},
+	collision: function(){
+		console.error("not implemented");
 	}
 });
 
@@ -137,7 +152,7 @@ var Ball = EXTENDS(Actor, {
 		var nextX = div(this.x + dx, FACTOR_X);
 		var nextY = div(this.y + dy, FACTOR_Y);
 		var hit = world[nextX][nextY] != empty;
-		if( hit ) this.collision(world[nextX][nextY]);
+		if( hit ) (world[nextX][nextY]).collision(this);
 		return hit;
 	},
 	animation: function() {
@@ -163,14 +178,16 @@ var Ball = EXTENDS(Actor, {
 // GAME CONTROL
 
 var GameControl = EXTENDS(JSRoot, {
-	INIT: function(serra_da_penha) {
+	INIT: function() {
 		ctx = document.getElementById("canvas1").getContext("2d");
 		empty = NEW(Empty);	// only one empty actor needed
 		world = this.createWorld();
-		this.loadLevel(serra_da_penha);
+		this.loadLevel(START_LEVEL);
 		ball = NEW(Ball); 
 		this.setupEvents();
 		control = this;
+
+		this.lifes = START_LIFES;
 	},
 	createWorld: function () { // stored by columns
 		var matrix = new Array(WORLD_WIDTH);
@@ -186,17 +203,41 @@ var GameControl = EXTENDS(JSRoot, {
 		if( level < 1 || level > MAPS.length )
 			fatalError("Invalid level " + level)
 		var map = MAPS[level-1];  // -1 because levels start at 1
-		
-		for (var x = 0; x < WORLD_WIDTH; x++) {
-			for(var y = 0; y < WORLD_HEIGHT; y++) {	
+		// INCOMPLETE: YOU NEED TO FILL THE ENTIRE WORLD
+
+		for( var x = 0 ; x < WORLD_WIDTH ; x++ ) {
+			for( var y = 0 ; y < WORLD_HEIGHT ; y++ ) {
 				var code = map[y][x];  // x/y reversed because map stored by lines
 				var gi = GameImage.getByCode(code);
-				if( gi )
-					NEW(globalByName(gi.kind), x, y, gi.color)
+				if( gi ){
+					var actor = NEW(globalByName(gi.kind), x, y, gi.color)
+					switch(actor.kind){
+						case "Brick":
+							this.nBricks++;
+							actor.collision = function(whoHit) {
+								if(whoHit.getColor() == this.getColor()){
+									this.hide();
+									control.nBricks--;
+								}
+							}
+							break;
+
+						case "Bucket":
+							actor.collision = function (whoHit) {
+								whoHit.setColor(this.getColor())
+							}
+							break;
+
+						case "Gold":
+							actor.collision = function(whoHit) {
+								
+							}
+							break;
+
+					}
+				}
 			}
 		}
-		
-		
 	},
 	setupEvents: function() {
 		this.setSpeed(DEFL_SPEED);
@@ -236,9 +277,7 @@ var GameControl = EXTENDS(JSRoot, {
 
 function onLoad() {
   // load images an then run the game
-	GameImage.loadImages(function() {
-		NEW(GameControl, 1);
-	});
+	GameImage.loadImages(function() {NEW(GameControl);});
 
 }
 
