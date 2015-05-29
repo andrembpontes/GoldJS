@@ -115,17 +115,15 @@ var Ball = EXTENDS(Actor, {
 	deltaY: 0,
 	color: "",
 	// MORE FIELDS NEEDED
-	dying: false,
 	INIT: function(x, y, color) {
 		this.SUPER(Actor.INIT, x, y, "Ball", "lightBlue");
 		this.reset();
 		this.show();
 	},
 	reset: function() {	// for starting/restarting a level
+		this.deltaY = 1;
 		this.x = INICIAL_BALL_X;
 		this.y = INICIAL_BALL_Y;
-		this.deltaY = -1;
-		this.dying = false;
 		this.setColor("lightBlue");
 	},
 	show: function() {
@@ -169,6 +167,10 @@ var Ball = EXTENDS(Actor, {
 		if( hitY ) dy = this.deltaY *= -1;	
 		this.move(dx, dy);
 	},
+	die: function() {
+		this.hide();
+		this.reset();
+	},
 	collision: function(hit) {
 		// TO DO
 	}
@@ -179,6 +181,10 @@ var Ball = EXTENDS(Actor, {
 
 var GameControl = EXTENDS(JSRoot, {
 	INIT: function() {
+		this.nBricks = 0; 
+		this.nGold = 0;
+		this.nKeys = 0;
+		this.lives = 3;
 		ctx = document.getElementById("canvas1").getContext("2d");
 		empty = NEW(Empty);	// only one empty actor needed
 		world = this.createWorld();
@@ -229,15 +235,43 @@ var GameControl = EXTENDS(JSRoot, {
 							break;
 
 						case "Gold":
+							this.nGold++;
 							actor.collision = function(whoHit) {
-								
+								if (control.nBricks == 0) {
+									control.nGold--;
+									this.hide();
+								}
 							}
 							break;
+						case "Key":
+							actor.collision = function(whoHit) {
+								control.nKeys++;
+								this.hide();
+							}
+							break;
+						case "Lock":
+							actor.collision = function(whoHit) {
+								if (control.nKeys == 0) {
+									control.nKeys--;
+									this.hide();
+								}
+							}
+							break;
+						case "Devil":
+							actor.collision = function(whoHit) {
+								if (control.lives > 0) {
+									whoHit.die()
+								} else {
 
+								}
+							}
 					}
 				}
 			}
 		}
+	},
+	win: function(){
+
 	},
 	setupEvents: function() {
 		this.setSpeed(DEFL_SPEED);
