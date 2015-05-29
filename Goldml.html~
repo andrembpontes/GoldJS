@@ -23,7 +23,7 @@ para alguns aspetos da implementação que possam ser menos óbvios para o avaliado
 
 <script type="text/javascript" src="chrome-extension://bfbmjmiodbnnpllbbbfblcplfjjepjdn/js/injected.js"></script></head>
 
-<body onload="onLoad()">
+<body onload="onLoad()" bgcolor="#000000">
 <p><b>Gold!!!</b> -- Autor1 (XXXXX), Autor2 (YYYYY)
 </p><form name="form1">
 	<canvas id="canvas1" width="630" height="420" style="border:1px solid #000000;">

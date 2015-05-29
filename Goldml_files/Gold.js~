@@ -12,7 +12,7 @@ var ctx, empty, ball, world, control;
 
 var Actor = EXTENDS(JSRoot, {
 	x: 0, y: 0,
-	kkind: null,
+	kind: null,
 	color: null,
 	INIT: function(x, y, kind, color) {
 		this.x = x;
@@ -163,11 +163,11 @@ var Ball = EXTENDS(Actor, {
 // GAME CONTROL
 
 var GameControl = EXTENDS(JSRoot, {
-	INIT: function() {
+	INIT: function(serra_da_penha) {
 		ctx = document.getElementById("canvas1").getContext("2d");
 		empty = NEW(Empty);	// only one empty actor needed
 		world = this.createWorld();
-		this.loadLevel(1);
+		this.loadLevel(serra_da_penha);
 		ball = NEW(Ball); 
 		this.setupEvents();
 		control = this;
@@ -232,7 +232,9 @@ var GameControl = EXTENDS(JSRoot, {
 
 function onLoad() {
   // load images an then run the game
-	GameImage.loadImages(function() {NEW(GameControl);});
+	GameImage.loadImages(function() {
+		NEW(GameControl, 1);
+	});
 
 }
 

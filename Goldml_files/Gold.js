@@ -163,11 +163,11 @@ var Ball = EXTENDS(Actor, {
 // GAME CONTROL
 
 var GameControl = EXTENDS(JSRoot, {
-	INIT: function() {
+	INIT: function(serra_da_penha) {
 		ctx = document.getElementById("canvas1").getContext("2d");
 		empty = NEW(Empty);	// only one empty actor needed
 		world = this.createWorld();
-		this.loadLevel(1);
+		this.loadLevel(serra_da_penha);
 		ball = NEW(Ball); 
 		this.setupEvents();
 		control = this;
@@ -186,13 +186,17 @@ var GameControl = EXTENDS(JSRoot, {
 		if( level < 1 || level > MAPS.length )
 			fatalError("Invalid level " + level)
 		var map = MAPS[level-1];  // -1 because levels start at 1
-		// INCOMPLETE: YOU NEED TO FILL THE ENTIRE WORLD
-		var x=12;
-		var y=0;
-		var code = map[y][x];  // x/y reversed because map stored by lines
-		var gi = GameImage.getByCode(code);
-		if( gi )
-			NEW(globalByName(gi.kind), x, y, gi.color)
+		
+		for (var x = 0; x < WORLD_WIDTH; x++) {
+			for(var y = 0; y < WORLD_HEIGHT; y++) {	
+				var code = map[y][x];  // x/y reversed because map stored by lines
+				var gi = GameImage.getByCode(code);
+				if( gi )
+					NEW(globalByName(gi.kind), x, y, gi.color)
+			}
+		}
+		
+		
 	},
 	setupEvents: function() {
 		this.setSpeed(DEFL_SPEED);
@@ -232,7 +236,9 @@ var GameControl = EXTENDS(JSRoot, {
 
 function onLoad() {
   // load images an then run the game
-	GameImage.loadImages(function() {NEW(GameControl);});
+	GameImage.loadImages(function() {
+		NEW(GameControl, 1);
+	});
 
 }
 
