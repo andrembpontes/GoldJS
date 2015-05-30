@@ -49,7 +49,7 @@ var Actor = EXTENDS(JSRoot, {
 		ctx.drawImage(image, this.x * ACTOR_PIXELS_X, this.y * ACTOR_PIXELS_Y);
 	},
 	collision: function(){
-		console.error("not implemented");
+		//console.error("not implemented");
 	}
 });
 
@@ -115,6 +115,7 @@ var Ball = EXTENDS(Actor, {
 	color: "",
 	// MORE FIELDS NEEDED
 	INIT: function(x, y, color) {
+		this.lives = 0
 		this.SUPER(Actor.INIT, x, y, "Ball", "lightBlue");
 		this.reset();
 		this.show();
@@ -167,6 +168,10 @@ var Ball = EXTENDS(Actor, {
 		this.move(dx, dy);
 	},
 	die: function() {
+		this.reposition();
+		this.lives--;
+	},
+	reposition: function() {
 		this.hide();
 		this.reset();
 	},
@@ -180,17 +185,14 @@ var Ball = EXTENDS(Actor, {
 
 var GameControl = EXTENDS(JSRoot, {
 	INIT: function() {
-		this.nBricks = 0; 
-		this.nGold = 0;
-		this.nKeys = 0;
 		this.lives = START_LIFES;
-
 		this.score = 0;
+		this.currentLevel = START_LEVEL;
 
 		ctx = document.getElementById("canvas1").getContext("2d");
 		empty = NEW(Empty);	// only one empty actor needed
 		world = this.createWorld();
-		this.loadLevel(START_LEVEL);
+		this.loadLevel(this.currentLevel);
 		ball = NEW(Ball); 
 		this.setupEvents();
 		control = this;
@@ -212,76 +214,87 @@ var GameControl = EXTENDS(JSRoot, {
 		console.log(this.score)
 	},
 	loadLevel: function (level) {
+		this.nBricks = 0; 
+		this.nGold = 0;
+		this.nKeys = 0;
+
 		if( level < 1 || level > MAPS.length )
 			fatalError("Invalid level " + level)
 		var map = MAPS[level-1];  // -1 because levels start at 1
-		// INCOMPLETE: YOU NEED TO FILL THE ENTIRE WORLD
-
 		for( var x = 0 ; x < WORLD_WIDTH ; x++ ) {
 			for( var y = 0 ; y < WORLD_HEIGHT ; y++ ) {
 				var code = map[y][x];  // x/y reversed because map stored by lines
 				var gi = GameImage.getByCode(code);
-				if( gi ){
-					var actor = NEW(globalByName(gi.kind), x, y, gi.color)
-					switch(actor.kind){
-						case "Brick":
-							this.nBricks++;
-							actor.collision = function(whoHit) {
-								if(whoHit.getColor() == this.getColor()){
-									this.hide();
-									control.nBricks--;
-									control.incScore(SCORE_BRICK)
-								}
-							}
-							break;
-
-						case "Bucket":
-							actor.collision = function (whoHit) {
-								whoHit.setColor(this.getColor())
-							}
-							break;
-
-						case "Gold":
-							this.nGold++;
-							actor.collision = function(whoHit) {
-								if (control.nBricks == 0) {
-									control.nGold--;
-									this.hide();
-									control.incScore(SCORE_GOLD)
-								}
-							}
-							break;
-						case "Key":
-							actor.collision = function(whoHit) {
-								control.nKeys++;
-								this.hide();
-								control.incScore(SCORE_KEY)
-							}
-							break;
-						case "Lock":
-							actor.collision = function(whoHit) {
-								if (control.nKeys > 0) {
-									control.nKeys--;
-									this.hide();
-									control.incScore(SCORE_LOCK)
-								}
-							}
-							break;
-						case "Devil":
-							actor.collision = function(whoHit) {
-								if (control.lives > 0) {
-									whoHit.die()
-								} else {
-
-								}
-							}
-					}
+				if (gi) {
+					this.createGameObject(gi, x, y)
 				}
 			}
 		}
 	},
-	win: function(){
+	createGameObject: function(gi, x, y) {
+		var actor = NEW(globalByName(gi.kind), x, y, gi.color)
+		switch(actor.kind){
+			case "Brick":
+				this.nBricks++;
+				actor.collision = function(whoHit) {
+					if(whoHit.getColor() == this.getColor()){
+						this.hide();
+						control.nBricks--;
+						control.incScore(SCORE_BRICK)
+					}
+				}
+				break;
 
+			case "Bucket":
+				actor.collision = function (whoHit) {
+					whoHit.setColor(this.getColor())
+				}
+				break;
+
+			case "Gold":
+				this.nGold++;
+				actor.collision = function(whoHit) {
+					if (control.nBricks == 0) {
+						control.nGold--;
+						this.hide();
+						control.incScore(SCORE_GOLD)
+						if (control.nGold == 0) {
+							control.nextLevel();
+						}
+					}
+				}
+				break;
+			case "Key":
+				actor.collision = function(whoHit) {
+					control.nKeys++;
+					this.hide();
+					control.incScore(SCORE_KEY)
+				}
+				break;
+			case "Lock":
+				actor.collision = function(whoHit) {
+					if (control.nKeys > 0) {
+						control.nKeys--;
+						this.hide();
+						control.incScore(SCORE_LOCK)
+					}
+				}
+				break;
+			case "Devil":
+				actor.collision = function(whoHit) {
+					if (control.lives > 0) {
+						whoHit.die()
+					} else {
+
+					}
+				}
+		}
+		return actor
+	},
+	nextLevel: function(){
+		this.currentLevel++;
+		ball.reposition();
+		this.loadLevel(this.currentLevel);
 	},
 	setupEvents: function() {
 		this.setSpeed(DEFL_SPEED);
@@ -325,7 +338,7 @@ function onLoad() {
 
 }
 
-function b1() { mesg("button1") }
+function die() { ball.die()}
 function b2() { mesg("button2") }
 
 
