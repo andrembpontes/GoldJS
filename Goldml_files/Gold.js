@@ -19,7 +19,6 @@ var SCORE_UNUSER_LIFE = 200
 
 var ctx, empty, ball, world, control;
 
-
 // ACTORS
 
 var Actor = EXTENDS(JSRoot, {
@@ -184,7 +183,10 @@ var GameControl = EXTENDS(JSRoot, {
 		this.nBricks = 0; 
 		this.nGold = 0;
 		this.nKeys = 0;
-		this.lives = 3;
+		this.lives = START_LIFES;
+
+		this.score = 0;
+
 		ctx = document.getElementById("canvas1").getContext("2d");
 		empty = NEW(Empty);	// only one empty actor needed
 		world = this.createWorld();
@@ -205,6 +207,10 @@ var GameControl = EXTENDS(JSRoot, {
 		}
 		return matrix;
 	},
+	incScore: function(score){
+		this.score += score
+		console.log(this.score)
+	},
 	loadLevel: function (level) {
 		if( level < 1 || level > MAPS.length )
 			fatalError("Invalid level " + level)
@@ -224,6 +230,7 @@ var GameControl = EXTENDS(JSRoot, {
 								if(whoHit.getColor() == this.getColor()){
 									this.hide();
 									control.nBricks--;
+									control.incScore(SCORE_BRICK)
 								}
 							}
 							break;
@@ -240,6 +247,7 @@ var GameControl = EXTENDS(JSRoot, {
 								if (control.nBricks == 0) {
 									control.nGold--;
 									this.hide();
+									control.incScore(SCORE_GOLD)
 								}
 							}
 							break;
@@ -247,13 +255,15 @@ var GameControl = EXTENDS(JSRoot, {
 							actor.collision = function(whoHit) {
 								control.nKeys++;
 								this.hide();
+								control.incScore(SCORE_KEY)
 							}
 							break;
 						case "Lock":
 							actor.collision = function(whoHit) {
-								if (control.nKeys == 0) {
+								if (control.nKeys > 0) {
 									control.nKeys--;
 									this.hide();
+									control.incScore(SCORE_LOCK)
 								}
 							}
 							break;
