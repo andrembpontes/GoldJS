@@ -4,16 +4,21 @@
 */
 
 // GAME CONSTANTS
-var START_LIFES = 3;
-var START_LEVEL = 1;
+START_LIVES = 3;
+START_LEVEL = 2;
+MAX_LEVEL = 6;
+START_TIME = 120;
 
 // GAME SCORES
-var SCORE_BRICK = 2
-var SCORE_KEY = 4
-var SCORE_LOCK = 4
-var SCORE_GOLD = 6
-var SCORE_UNUSED_SECOND = 1
-var SCORE_UNUSER_LIFE = 200
+SCORE_BRICK = 2
+SCORE_KEY = 4
+SCORE_LOCK = 4
+SCORE_GOLD = 6
+SCORE_UNUSED_SECOND = 1
+SCORE_UNUSER_LIFE = 200
+
+INVENTARY_KEY = "KEY"
+
 
 // GLOBAL VARIABLES
 
@@ -22,15 +27,12 @@ var ctx, empty, ball, world, control;
 // ACTORS
 
 var Actor = EXTENDS(JSRoot, {
-	x: 0, y: 0,
-	kind: null,
-	color: null,
+	countable: false,
 	INIT: function(x, y, kind, color) {
 		this.x = x;
 		this.y = y;
 		this.kind = kind;
 		this.color = color;
-		this.show();
 	},
 	setColor: function(color) {
 		this.color = color;
@@ -38,90 +40,149 @@ var Actor = EXTENDS(JSRoot, {
 	getColor: function() {
 		return this.color;
 	},
+	setShowCallback: function(callback){
+		this.showCallback = callback	
+	},
+	setHideCallback: function(callback){
+		this.hideCallback = callback
+	},
 	show: function() {
 		var image = GameImage.get(this.kind, this.color).image;
 		world[this.x][this.y] = this;
 		ctx.drawImage(image, this.x * ACTOR_PIXELS_X, this.y * ACTOR_PIXELS_Y);
+
+		if(this.showCallback)
+			this.showCallback()
 	},
 	hide: function() {
 		var image = GameImage.get("Empty", "").image;
 		world[this.x][this.y] = empty;
 		ctx.drawImage(image, this.x * ACTOR_PIXELS_X, this.y * ACTOR_PIXELS_Y);
+		
+		if(this.hideCallback)
+			this.hideCallback()
 	},
-	collision: function(){
-		//console.error("not implemented");
+	collision: function(whoHit){
+	},
+	ballCollision: function(ball) {
+		return null
 	}
 });
 
 var Empty = EXTENDS(Actor, {
+	kind: "Empty",
 	INIT: function() {
-		this.SUPER(Actor.INIT, -1, -1, "Empty", "");
+		this.SUPER(Actor.INIT, -1, -1, this.kind, "");
 	},
 	show: function() {},
 	hide: function() {}
 });
 
 var Boundary = EXTENDS(Actor, {
+	kind: "Boundary",
 	INIT: function(x, y, color) {
-		this.SUPER(Actor.INIT, x, y, "Boundary", color);
+		this.SUPER(Actor.INIT, x, y, this.kind, color);
 	}
 })
 
 var Brick = EXTENDS(Actor, {
+	kind: "Brick",
+	countable: true,
 	INIT: function(x, y, color) {
-		this.SUPER(Actor.INIT, x, y, "Brick", color);
+		this.SUPER(Actor.INIT, x, y, this.kind, color);
+		this.score = SCORE_BRICK
+	},
+	ballCollision: function(ball) {
+		if (ball.getColor() == this.getColor()) {
+			this.hide() 
+			return this.score
+		}
 	}
 })
 
 var Bucket = EXTENDS(Actor, {
+	kind: "Bucket",
 	INIT: function(x, y, color) {
-		this.SUPER(Actor.INIT, x, y, "Bucket", color);
+		this.SUPER(Actor.INIT, x, y, this.kind, color);
+	},
+	ballCollision: function(ball) {
+		return ball.setColor(this.color)
 	}
 })
 
 var Devil = EXTENDS(Actor, {
+	kind: "Devil",
 	INIT: function(x, y, color) {
-		this.SUPER(Actor.INIT, x, y, "Devil", color);
+		this.SUPER(Actor.INIT, x, y, this.kind, color);
+	},
+	ballCollision: function(ball) {
+		ball.die()
 	}
 })
 
 var Inverter = EXTENDS(Actor, {
+	kind: "Inverter",
 	INIT: function(x, y, color) {
-		this.SUPER(Actor.INIT, x, y, "Inverter", color);
+		this.SUPER(Actor.INIT, x, y, this.kind, color);
+	},
+	ballCollision: function() {
+		control.invertControls()
 	}
 })
 
 var Key = EXTENDS(Actor, {
+	countable: true,
+	kind: "Key",
 	INIT: function(x, y, color) {
-		this.SUPER(Actor.INIT, x, y, "Key", color);
+		this.SUPER(Actor.INIT, x, y, this.kind, color);
+	},
+	ballCollision: function(ball) {
+		ball.addToInventary(INVENTARY_KEY)
+		this.hide()
+		return this.score
 	}
 })
 
 var Lock = EXTENDS(Actor, {
+	countable: true,
+	kind: "Lock",
 	INIT: function(x, y, color) {
-		this.SUPER(Actor.INIT, x, y, "Lock", color);
+		this.SUPER(Actor.INIT, x, y, this.kind, color);
+	},
+	ballCollision: function(ball) {
+		if (ball.remToInventary(INVENTARY_KEY)) {
+			this.hide()
+			return this.score
+		}
 	}
 })
 
 var Gold = EXTENDS(Actor, {
+	countable: true,
+	kind: "Gold",
 	INIT: function(x, y, color) {
-		this.SUPER(Actor.INIT, x, y, "Gold", color);
+		this.SUPER(Actor.INIT, x, y, this.kind, color);
+	},
+	ballCollision: function(ball) {
+		if(control.getActorCount(Brick.kind) == 0){
+			this.hide()
+			return this.score
+		}
 	}
 })
 
 var Ball = EXTENDS(Actor, {
-	deltaX: 0,
-	deltaY: 0,
-	color: "",
-	// MORE FIELDS NEEDED
 	INIT: function(x, y, color) {
-		this.lives = 0
+		this.pause()
+		this.deltaX = 0
+		this.deltaY = 1
+		this.inventary = []
+		this.lives = N_LIVES
 		this.SUPER(Actor.INIT, x, y, "Ball", "lightBlue");
 		this.reset();
-		this.show();
+		this.show()
 	},
 	reset: function() {	// for starting/restarting a level
-		this.deltaY = 1;
 		this.x = INICIAL_BALL_X;
 		this.y = INICIAL_BALL_Y;
 		this.setColor("lightBlue");
@@ -129,13 +190,19 @@ var Ball = EXTENDS(Actor, {
 	show: function() {
 		var image = GameImage.get(this.kind, this.color).image;
 		ctx.drawImage(image, this.x * BALL_PIXELS_X, this.y * BALL_PIXELS_Y);
+		
+		if(this.showCallback)
+			this.showCallback()
 	},
 	hide: function() {
 		var image = GameImage.get(this.kind, "white").image;
 		ctx.drawImage(image, this.x * BALL_PIXELS_X, this.y * BALL_PIXELS_Y);
+		
+		if(this.hideCallback)
+			this.hideCallback()
 	},
 	move: function(dx, dy) {
-		this.hide();
+	   	this.hide();
 		this.x += dx;
 		this.y += dy;
 		this.show();		
@@ -143,40 +210,94 @@ var Ball = EXTENDS(Actor, {
 	setDeltaX: function(dx) {
 		this.deltaX = dx;
 	},
-	getDeltaX: function(dx) {
+	getDeltaX: function() {
 		return this.deltaX;
+	},
+	setDeltaY: function(dy) {
+		this.deltaY = dy;
+	},
+	getDeltaY: function() {
+		return this.deltaY;
 	},
 	checkHit: function(dx, dy) {
 		var nextX = div(this.x + dx, FACTOR_X);
 		var nextY = div(this.y + dy, FACTOR_Y);
 		var hit = world[nextX][nextY] != empty;
-		if( hit ) (world[nextX][nextY]).collision(this);
+		if( hit ) this.collision(world[nextX][nextY]);
 		return hit;
 	},
 	animation: function() {
-		var dx = this.getDeltaX();
-		var dy = this.deltaY;
-		var hitX = false;
-		var hitY = this.checkHit(0, dy);
-		if( dx != 0 ) {
-			hitX = this.checkHit(dx, 0);
-			if( !hitX && !hitY )
-				hitY = this.checkHit(dx, dy);
+		if (!this.isPaused()) {
+			var dx = this.getDeltaX();
+			var dy = this.deltaY;
+			var hitX = false;
+			var hitY = this.checkHit(0, dy);
+			if( dx != 0 ) {
+				hitX = this.checkHit(dx, 0);
+				if( !hitX && !hitY )
+					hitY = this.checkHit(dx, dy);
+			}
+			if( hitX ) dx *= -1;
+			if( hitY ) dy = this.deltaY *= -1;	
+			this.move(dx, dy);
 		}
-		if( hitX ) dx *= -1;
-		if( hitY ) dy = this.deltaY *= -1;	
-		this.move(dx, dy);
+	},
+	getLives: function() {
+		return this.lives	
 	},
 	die: function() {
 		this.reposition();
 		this.lives--;
+		
+		if(this.loseLiveCallback)
+			this.loseLiveCallback();
+		
+		if(this.lives == 0 && this.dieCallback){
+			this.dieCallback();
+		}
+	},
+	pause: function() {
+		this.paused = true
+	},
+	unpause: function() {
+		this.paused = false
+	},
+	isPaused: function() {
+		return this.paused
+	},
+	setDieCallback: function(func){
+		this.dieCallback = func
+	},
+	setLoseCallback: function(func){
+		this.loseLiveCallback = func
 	},
 	reposition: function() {
 		this.hide();
 		this.reset();
 	},
 	collision: function(hit) {
-		// TO DO
+		control.incScore(hit.ballCollision(this) || 0)
+	},
+	addToInventary: function(item, qty){
+		if(! qty) qty = 1
+		
+		if(!this.inventary[item])
+			this.inventary[item] = 0
+		
+		this.inventary[item]+= qty
+	},
+	hasInInventary: function(item, qty){
+		if(!qty) qty = 1
+		
+		return this.inventary[item] >= qty	
+	},
+	remFromInventary: function(item, qty){
+		if(!qty) qty = 1
+			
+		if(hasInInventary(item, qty)){
+			inventary[item]-= qty
+			return item
+		}
 	}
 })
 
@@ -185,19 +306,50 @@ var Ball = EXTENDS(Actor, {
 
 var GameControl = EXTENDS(JSRoot, {
 	INIT: function() {
-		this.lives = START_LIFES;
-		this.score = 0;
-		this.currentLevel = START_LEVEL;
+		control = this;
+		this.actorCount = {};
 
-		ctx = document.getElementById("canvas1").getContext("2d");
+		this.currentLevel = START_LEVEL;
+		this.score = 0;
+		this.controlInverter = 1
+
 		empty = NEW(Empty);	// only one empty actor needed
 		world = this.createWorld();
+		
 		this.loadLevel(this.currentLevel);
-		ball = NEW(Ball); 
+		ball = NEW(Ball);
+		ball.setDieCallback(function(){control.lose()})
 		this.setupEvents();
-		control = this;
-
-		this.lifes = START_LIFES;
+		
+		this.timer = new Timer(START_TIME, function(){
+			ball.die()
+			control.timer.setTime(START_TIME)
+			control.timer.start()
+		},
+		function(){
+			updateTimer(control.timer.getTime())
+		})
+		
+		this.timer.start()
+	},
+	incActorCount: function(kind){
+		if(!this.actorCount[kind])
+			this.actorCount[kind] = 0
+			
+		this.actorCount[kind]++
+	},
+	decActorCount: function(kind){
+		if(!this.actorCount[kind])
+			this.actorCount[kind] = 0
+		
+		this.actorCount[kind]--
+		this.checkEndGame()
+	},
+	checkEndGame: function() {
+		if (this.getActorCount(Gold.kind) == 0) this.win()
+	},
+	getActorCount: function(kind){
+		return this.actorCount[kind] || 0
 	},
 	createWorld: function () { // stored by columns
 		var matrix = new Array(WORLD_WIDTH);
@@ -211,13 +363,10 @@ var GameControl = EXTENDS(JSRoot, {
 	},
 	incScore: function(score){
 		this.score += score
-		console.log(this.score)
+		updateScore(this.score)
 	},
 	loadLevel: function (level) {
-		this.nBricks = 0; 
-		this.nGold = 0;
-		this.nKeys = 0;
-
+		document.getElementById("canvas1").innerHTML = "sdfiajidsji"
 		if( level < 1 || level > MAPS.length )
 			fatalError("Invalid level " + level)
 		var map = MAPS[level-1];  // -1 because levels start at 1
@@ -232,88 +381,50 @@ var GameControl = EXTENDS(JSRoot, {
 		}
 	},
 	createGameObject: function(gi, x, y) {
-		var actor = NEW(globalByName(gi.kind), x, y, gi.color)
-		switch(actor.kind){
-			case "Brick":
-				this.nBricks++;
-				actor.collision = function(whoHit) {
-					if(whoHit.getColor() == this.getColor()){
-						this.hide();
-						control.nBricks--;
-						control.incScore(SCORE_BRICK)
-					}
-				}
-				break;
-
-			case "Bucket":
-				actor.collision = function (whoHit) {
-					whoHit.setColor(this.getColor())
-				}
-				break;
-
-			case "Gold":
-				this.nGold++;
-				actor.collision = function(whoHit) {
-					if (control.nBricks == 0) {
-						control.nGold--;
-						this.hide();
-						control.incScore(SCORE_GOLD)
-						if (control.nGold == 0) {
-							control.nextLevel();
-						}
-					}
-				}
-				break;
-			case "Key":
-				actor.collision = function(whoHit) {
-					control.nKeys++;
-					this.hide();
-					control.incScore(SCORE_KEY)
-				}
-				break;
-			case "Lock":
-				actor.collision = function(whoHit) {
-					if (control.nKeys > 0) {
-						control.nKeys--;
-						this.hide();
-						control.incScore(SCORE_LOCK)
-					}
-				}
-				break;
-			case "Devil":
-				actor.collision = function(whoHit) {
-					if (control.lives > 0) {
-						whoHit.die()
-					} else {
-
-					}
-				}
-		}
-		return actor
+		var n = NEW(globalByName(gi.kind), x, y, gi.color)
+		n.setHideCallback(function(){
+			control.decActorCount(this.kind)
+		})
+		
+		n.setShowCallback(function(){
+			control.incActorCount(this.kind)
+		})
+		
+		n.show()
 	},
 	nextLevel: function(){
 		this.currentLevel++;
+		ball.pause()
 		ball.reposition();
 		this.loadLevel(this.currentLevel);
 	},
 	setupEvents: function() {
 		this.setSpeed(DEFL_SPEED);
+		addEventListener("keypress", this.keyPressEvent, false)
 		addEventListener("keydown", this.keyDownEvent, false);
 		addEventListener("keyup", this.keyUpEvent, false);
 	},
 	animationEvent: function () {
 		ball.animation();
 	},
+	invertControls: function() {
+		this.controlInverter *= -1
+	},
+	keyPressEvent: function(k) {
+		if (ball.isPaused()) { 
+			ball.unpause()	
+		}
+	},
 	keyDownEvent: function(k) {
 		// http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
 		var code = k.keyCode
 		switch(code) {
 			case 37: case 79: case 74:
-				ball.setDeltaX(-1); break;	// LEFT, O, J
+				ball.setDeltaX(-1 * control.controlInverter); break;	// LEFT, O, J
 			case 38: case 81: case 73:
 				/* ignore */ break;			// UP, Q, I
 			case 39: case 80: case 76:
-				ball.setDeltaX(1);  break;	// RIGHT, P, L
+				ball.setDeltaX(1 * control.controlInverter);  break;	// RIGHT, P, L
 			case 40: case 65: case 75:
 				/* ignore */ break;			// DOWN, A, K
 			default: break;
@@ -326,20 +437,127 @@ var GameControl = EXTENDS(JSRoot, {
 		if( (speed < MIN_SPEED) || (MAX_SPEED < speed) )
 			speed = MIN_SPEED;
 		setInterval(this.animationEvent, (MAX_SPEED + 1 - speed) * 30);
+	},
+	setWinCallback: function(func) {
+		this.winCallback = func
+	},
+	setLoseCallback: function(func) {
+		this.loseCallback = func
+	},
+	win: function() {
+		if (this.winCallback) this.winCallback()
+		this.nextLevel()
+	},	
+	lose: function() {
+		if (this.loseCallback)this.loseCallback()
+	}, 
+	calcBonus: function() {
+		
 	}
 });
 
-
 // HTML FORM
 
-function onLoad() {
-  // load images an then run the game
-	GameImage.loadImages(function() {NEW(GameControl);});
+function playCountdown(endCallback){
+	ctx = document.getElementById("canvas1").getContext("2d");
+	video = document.getElementById("countdown");
+	
+	video.addEventListener('play', function() {
+	    var $this = this; //cache
+	    (function loop() {
+	      	if (!$this.paused && !$this.ended) {
+	        	ctx.drawImage($this, 0, 0, 630, 420);
+	        	setTimeout(loop, 1000 / 30); // drawing at 30fps
+	      	}
+	    })();
+	}, 0);
+	
+	video.addEventListener('ended', function(){
+		clearCanvas()
+		endCallback()
+	})
+	
+	video.play()
+	//endCallback()
+}
 
+function clearCanvas(){
+	var ctx = document.getElementById("canvas1").getContext("2d")
+	ctx.fillStyle = "white"
+	ctx.fillRect(0,0,630,420)
+}
+
+function startGame(){
+  	NEW(GameControl);
+	//Populate interface
+
+	updateTimer(START_TIME, function(){})
+	updateScore(0)
+	updateLives.call(ball, ball.getLives)
+	
+	//ball.setDieCallback(createCallback(ball, updateLives, ball.getLives))
+	ball.setLoseCallback(function(){updateLives.call(ball, ball.getLives)})
+	
+ 	//control.setWinCallback()
+ 	control.setLoseCallback(function(){ console.log("GAME OVER") })
+}
+
+function onLoad(){
+  	// load images an then run the game
+	GameImage.loadImages(function() {
+		playCountdown(startGame)		
+	});
+}
+
+
+Timer = function(startTime, timeOutCallback, timeCallback){
+	this.time = startTime;
+	this.pause = false;
+	
+	this.timeOutCallback = timeOutCallback
+	this.timeCallback = timeCallback
+}
+Timer.prototype.setTime = function(time) { this.time = time; this.timeCallback() }
+Timer.prototype.getTime = function() {return this.time }
+Timer.prototype.pause = function() { this.pause = true }
+Timer.prototype.start = function() { this.pause = false; this.loop(this) }
+Timer.prototype.incTime = function(time) { this.time += time }
+Timer.prototype.loop = function(timer) {
+	if(!timer.pause){
+		timer.time--
+		
+		if(timer.time > 0){
+			timer.timeCallback()
+			setTimeout(function(){timer.loop.call(timer, timer)}, 1000)
+		}
+		else
+			timer.timeOutCallback()
+		
+	}
+}
+
+
+function updateTimer(time){
+	updateHTML.call(this, "lableTime", time)
+}
+
+function updateLives(lives){
+	updateHTML.call(this,"lableLives", lives)
+}
+
+function updateScore(score){
+	updateHTML("lableScore", score)
+}
+
+function updateHTML(lableName, innerHTML){
+	if(typeof(innerHTML) === "function")
+		innerHTML = innerHTML.call(this)
+	
+	document.getElementById(lableName).innerHTML = innerHTML;
 }
 
 function die() { ball.die()}
-function b2() { mesg("button2") }
+function reset() { control.reset() }
 
 
 

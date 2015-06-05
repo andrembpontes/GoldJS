@@ -30,7 +30,7 @@ function EXTENDS(clazz, added) { // Creates a subclass of a given class
     return subclazz;
 };
 
-// "print" é opcional, mas introduz compatibilidade com o Node.js
+// "print" ï¿½ opcional, mas introduz compatibilidade com o Node.js
 var print = typeof(console) !== 'undefined' ? console.log : print;
 
 

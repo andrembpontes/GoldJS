@@ -7,34 +7,120 @@ Gold!!! HTML
 
 Autores: Fulano (99998), Sicrano (99999)
 
-O ficheiro "Gold.js" tem de incluir, logo nas primeiras linhas, um comentário
-inicial contendo: o nome e número dos dois alunos que realizaram o projeto;
-indicação de quais as partes do trabalho que foram feitas e das que não foram
-feitas (para facilitar uma correção sem enganos); ainda possivelmente alertando
-para alguns aspetos da implementação que possam ser menos óbvios para o avaliador.
+O ficheiro "Gold.js" tem de incluir, logo nas primeiras linhas, um comentï¿½rio
+inicial contendo: o nome e nï¿½mero dos dois alunos que realizaram o projeto;
+indicaï¿½ï¿½o de quais as partes do trabalho que foram feitas e das que nï¿½o foram
+feitas (para facilitar uma correï¿½ï¿½o sem enganos); ainda possivelmente alertando
+para alguns aspetos da implementaï¿½ï¿½o que possam ser menos ï¿½bvios para o avaliador.
 
 01234567890123456789012345678901234567890123456789012345678901234567890123456789
---><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>Linguagens e Ambientes de Programação (2014/2015) [Eng.Inf. - DI/FCT/UNL] - 3º projeto prático (Javascript)</title>
+-->
 
-<script type="text/javascript" src="./Goldml_files/Gold0.js"></script>
-<script type="text/javascript" src="./Goldml_files/Gold.js"></script>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+   <title>Linguagens e Ambientes de Programaï¿½ï¿½o (2014/2015) [Eng.Inf. - DI/FCT/UNL] - 3ï¿½ projeto prï¿½tico (Javascript)</title>
+   
+   <script type="text/javascript" src="./Goldml_files/Gold0.js"></script>
+   <script type="text/javascript" src="./Goldml_files/Gold.js"></script>
+</head>
 
-
-<script type="text/javascript" src="chrome-extension://bfbmjmiodbnnpllbbbfblcplfjjepjdn/js/injected.js"></script></head>
-
-<body onload="onLoad()">
-<p><b>Gold!!!</b> -- Autor1 (XXXXX), Autor2 (YYYYY)
+<body onload="onLoad()" 
+style="background-image: url(http://www.you-view.be/wp-content/uploads/background-radial-gradient-dark.jpg);
+background-attachment : fixed;
+background-position   : 50% 50%;    
+background-size       : cover;">
+	
+<div align="center">
+</br>
+<p><b><h1 font-family="Courier New">Gold</h1></b><i> by</i> Andre P. (666), Goncalo M. (43178)
 </p><form name="form1">
 	<canvas id="canvas1" width="630" height="420" style="border:1px solid #000000;">
         Your browser doesn't support the HTML5 CANVAS tag.
     </canvas> <br>
-	<input type="button" name="button1" value="Die" size="10" onclick="die()">
-	<input type="button" name="button2" value="Button2" size="10" onclick="b2()">
+    
+      <video width="630" height="420" id=countdown style = "display:none">
+        <source src="Goldml_files/countdown.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+      </video>
+    
+    <table border="0"  width="630">
+    	<tr>
+			<td><input type="button" class="button" name="button1" value="Die" size="10" style="width:315px; height:25px" onclick="die()"></td>
+			<td><input type="button" class="button" name="button2" value="Restart" size="10" style="width:315px; height:25px" onclick="reset()"></td>
+		</tr>
+		<tr><td></br></td></tr>
+		<tr><td colspan="2"><p>Score: <lable id = "lableScore"></lable></p></td></tr>
+		<tr><td colspan="2"><p>Lifes: <lable id = "lableLives"></lable></p></td></tr>
+		<tr><td colspan="2"><p>Time: <lable id = "lableTime"></lable></p></td></tr>
+	</table>
 </form>
+</div>
 
 
 
-<!-- código inicial de AMD/2015 -->
+<!-- cï¿½digo inicial de AMD/2015 -->
+<!-- vim:set ts=4 sw=4 et: -->
+</body></html>
+
+<!-- saved from url=(0065)http://ctp.di.fct.unl.pt/~amd/lap/projs/proj2015-3/code/Gold.html -->
+<html><!--
+Gold!!! HTML
+
+	*** REESCREVA ESTE TEXTO! ***
+
+Autores: Fulano (99998), Sicrano (99999)
+
+O ficheiro "Gold.js" tem de incluir, logo nas primeiras linhas, um comentï¿½rio
+inicial contendo: o nome e nï¿½mero dos dois alunos que realizaram o projeto;
+indicaï¿½ï¿½o de quais as partes do trabalho que foram feitas e das que nï¿½o foram
+feitas (para facilitar uma correï¿½ï¿½o sem enganos); ainda possivelmente alertando
+para alguns aspetos da implementaï¿½ï¿½o que possam ser menos ï¿½bvios para o avaliador.
+
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+-->
+
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+   <title>Linguagens e Ambientes de Programaï¿½ï¿½o (2014/2015) [Eng.Inf. - DI/FCT/UNL] - 3ï¿½ projeto prï¿½tico (Javascript)</title>
+   
+   <script type="text/javascript" src="./Goldml_files/Gold0.js"></script>
+   <script type="text/javascript" src="./Goldml_files/Gold.js"></script>
+</head>
+
+<body onload="onLoad()" 
+style="background-image: url(http://www.you-view.be/wp-content/uploads/background-radial-gradient-dark.jpg);
+background-attachment : fixed;
+background-position   : 50% 50%;    
+background-size       : cover;">
+	
+<div align="center">
+</br>
+<p><b><h1 font-family="Courier New">Gold</h1></b><i> by</i> Andre P. (666), Goncalo M. (43178)
+</p><form name="form1">
+	<canvas id="canvas1" width="630" height="420" style="border:1px solid #000000;">
+        Your browser doesn't support the HTML5 CANVAS tag.
+    </canvas> <br>
+    
+      <video width="630" height="420" id=countdown style = "display:none">
+        <source src="Goldml_files/countdown.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+      </video>
+    
+    <table border="0"  width="630">
+    	<tr>
+			<td><input type="button" class="button" name="button1" value="Die" size="10" style="width:315px; height:25px" onclick="die()"></td>
+			<td><input type="button" class="button" name="button2" value="Restart" size="10" style="width:315px; height:25px" onclick="reset()"></td>
+		</tr>
+		<tr><td></br></td></tr>
+		<tr><td colspan="2"><p>Score: <lable id = "lableScore"></lable></p></td></tr>
+		<tr><td colspan="2"><p>Lifes: <lable id = "lableLives"></lable></p></td></tr>
+		<tr><td colspan="2"><p>Time: <lable id = "lableTime"></lable></p></td></tr>
+	</table>
+</form>
+</div>
+
+
+
+<!-- cï¿½digo inicial de AMD/2015 -->
 <!-- vim:set ts=4 sw=4 et: -->
 </body></html>
