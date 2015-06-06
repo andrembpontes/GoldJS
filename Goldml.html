@@ -15,6 +15,54 @@ para alguns aspetos da implementa��o que possam ser menos �bvios para o av
 
 01234567890123456789012345678901234567890123456789012345678901234567890123456789
 -->
+<style type="text/css">
+.button {
+   border: 2px solid #000000;
+   background: #e6e6e6;
+   background: -webkit-gradient(linear, left top, left bottom, from(#ededed), to(#e6e6e6));
+   background: -webkit-linear-gradient(top, #ededed, #e6e6e6);
+   background: -moz-linear-gradient(top, #ededed, #e6e6e6);
+   background: -ms-linear-gradient(top, #ededed, #e6e6e6);
+   background: -o-linear-gradient(top, #ededed, #e6e6e6);
+   background-image: -ms-linear-gradient(top, #ededed 0%, #e6e6e6 100%);
+   -webkit-border-radius: 0px;
+   -moz-border-radius: 0px;
+   border-radius: 0px;
+   -webkit-box-shadow: rgba(255,255,255,0.4) 0 1px 0, inset rgba(255,255,255,0.4) 0 1px 0;
+   -moz-box-shadow: rgba(255,255,255,0.4) 0 1px 0, inset rgba(255,255,255,0.4) 0 1px 0;
+   box-shadow: rgba(255,255,255,0.4) 0 1px 0, inset rgba(255,255,255,0.4) 0 1px 0;
+
+   color: #000000;
+   font-size: 15px;
+   font-family: helvetica, serif;
+   text-decoration: none;
+   vertical-align: middle;
+   }
+.button:hover {
+   border: 2px solid #000000;
+   text-shadow: #000000 0 1px 0;
+   background: #878787;
+   background: -webkit-gradient(linear, left top, left bottom, from(#858585), to(#878787));
+   background: -webkit-linear-gradient(top, #858585, #878787);
+   background: -moz-linear-gradient(top, #858585, #878787);
+   background: -ms-linear-gradient(top, #858585, #878787);
+   background: -o-linear-gradient(top, #858585, #878787);
+   background-image: -ms-linear-gradient(top, #858585 0%, #878787 100%);
+   color: #fff;
+   }
+.button:active {
+   text-shadow: #000000 0 1px 0;
+   border: 2px solid #000000;
+   background: #050505;
+   background: -webkit-gradient(linear, left top, left bottom, from(#000000), to(#878787));
+   background: -webkit-linear-gradient(top, #000000, #050505);
+   background: -moz-linear-gradient(top, #000000, #050505);
+   background: -ms-linear-gradient(top, #000000, #050505);
+   background: -o-linear-gradient(top, #000000, #050505);
+   background-image: -ms-linear-gradient(top, #000000 0%, #050505 100%);
+   color: #ffffff;
+   }
+</style>
 
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
@@ -46,12 +94,12 @@ background-size       : cover;">
     <table border="0"  width="630">
     	<tr>
 			<td><input type="button" class="button" name="button1" value="Die" size="10" style="width:315px; height:25px" onclick="die()"></td>
-			<td><input type="button" class="button" name="button2" value="Restart" size="10" style="width:315px; height:25px" onclick="reset()"></td>
+			<td><input type="button" class="button" name="button2" value="Restart" size="10" style="width:315px; height:25px" onclick="restart()"></td>
 		</tr>
-		<tr><td></br></td></tr>
-		<tr><td colspan="2"><p>Score: <lable id = "lableScore"></lable></p></td></tr>
-		<tr><td colspan="2"><p>Lifes: <lable id = "lableLives"></lable></p></td></tr>
-		<tr><td colspan="2"><p>Time: <lable id = "lableTime"></lable></p></td></tr>
+		<tr><td colspan="2"></br></td></tr>
+    <tr><td>Score: <lable id = "lableScore"></lable></td><td align="right">Round: <lable id = "lableRound"></lable></td></tr>
+    <tr><td>Lifes: <lable id = "lableLives"></lable></td><td align="right">Level: <lable id = "lableLevel"></lable></td></tr>
+		<tr><td colspan="2"><p>Time: <lable id = "lableTime"></lable></td></tr>
 	</table>
 </form>
 </div>

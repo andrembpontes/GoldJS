@@ -4,6 +4,7 @@
 */
 
 // GAME CONSTANTS
+START_LIVES = 3;
 START_LEVEL = 1;
 MAX_LEVEL = 2;
 START_TIME = 120;
@@ -16,12 +17,9 @@ SCORE_KEY = 4
 SCORE_LOCK = 4
 SCORE_GOLD = 6
 SCORE_UNUSED_SECOND = 1
-SCORE_UNUSED_LIFE = 200
+SCORE_UNUSER_LIFE = 200
 
 INVENTARY_KEY = "KEY"
-
-RED_LIVES = 1
-RED_TIME = 15
 
 
 // GLOBAL VARIABLES
@@ -59,15 +57,12 @@ var Actor = EXTENDS(JSRoot, {
 			this.showCallback()
 	},
 	hide: function() {
-		this.clear()
-		
-		if(this.hideCallback)
-			this.hideCallback()
-	},
-	clear: function() {
 		var image = GameImage.get("Empty", "").image;
 		world[this.x][this.y] = empty;
 		ctx.drawImage(image, this.x * ACTOR_PIXELS_X, this.y * ACTOR_PIXELS_Y);
+		
+		if(this.hideCallback)
+			this.hideCallback()
 	},
 	collision: function(whoHit){
 	},
@@ -329,6 +324,8 @@ var GameControl = EXTENDS(JSRoot, {
 
 		ball = NEW(Ball);
 
+		this.restart()
+
 		ball.setDieCallback(function(){control.lose()})
 		this.setupEvents();
 		
@@ -338,30 +335,22 @@ var GameControl = EXTENDS(JSRoot, {
 			control.timer.start()
 		},
 		function(){
-			//TODO: CHANGE TO CALLBACK
 			updateTimer(control.timer.getTime())
 		})
 		
 		this.timer.start()
 	},
-	setGameStartCallback: function(func) {
-		this.gameStartCallback = func
-	},
 	restart: function() {
 		this.score = 0;
 		this.round = 1
-		ball.lives = N_LIVES
-		this.actorCount = {}
+		this.animationInterval = 
 		this.currentLevel = START_LEVEL
 		this.newLevel(this.currentLevel)
-		this.gameStartCallback()
 	},
 	newLevel: function(currentLevel) {
-		this.timer.setTime(START_TIME)
-		this.clearGameObjects()
+		//this.clearGameObjects()
 		this.controlInverter = 1
 		this.setSpeed(this.calcBallSpeed())
-		ball.reposition()
 		this.loadLevel(currentLevel);
 	},
 	getRound: function() {
@@ -401,7 +390,6 @@ var GameControl = EXTENDS(JSRoot, {
 	},
 	incScore: function(score){
 		this.score += score
-		//TODO: CHANGE TO CALLBACK 
 		updateScore(this.score)
 	},
 	loadLevel: function (level) {
@@ -420,8 +408,8 @@ var GameControl = EXTENDS(JSRoot, {
 		}
 	},
 	clearGameObjects: function() {
- 		for (var i = 0; i < this.nonEmptyGameObjects.length; i++) {
-			this.nonEmptyGameObjects[i].clear()
+		for (var i = 0; i < this.nonEmptyGameObjects.length; i++) {
+			this.nonEmptyGameObjects[i].hide()
 		}
 		this.nonEmptyGameObjects = []
 	},
@@ -436,15 +424,15 @@ var GameControl = EXTENDS(JSRoot, {
 		})
 		
 		n.show()
-		return n
 	},
 	nextLevel: function(){
 		this.currentLevel++;
 		if (this.currentLevel > MAX_LEVEL) {
 			this.currentLevel = START_LEVEL
 			this.round++
-			this.incScore(this.calcEndRoundBonus())
 		}
+		ball.reposition();
+		this.loadLevel(this.currentLevel);
 	},
 	calcBallSpeed: function() {
 		return DEFL_SPEED + (MAX_VELOCITY_BUFF * (this.round - 1)/(MAX_ROUND_N_VELOCITY_INC - 1))
@@ -496,20 +484,14 @@ var GameControl = EXTENDS(JSRoot, {
 		this.loseCallback = func
 	},
 	win: function() {
-		this.incScore(this.calcEndLevelBonus())
 		this.nextLevel()
-		this.newLevel(this.currentLevel)
 		if (this.winCallback) this.winCallback()
 	},	
 	lose: function() {
 		if (this.loseCallback)this.loseCallback()
-		this.restart()
 	}, 
-	calcEndLevelBonus: function() {
-		return control.timer.getTime() * SCORE_UNUSED_SECOND 
-	},
-	calcEndRoundBonus: function() {
-		return ball.lives * SCORE_UNUSED_LIFE
+	calcBonus: function() {
+		
 	}
 });
 
@@ -535,6 +517,7 @@ function playCountdown(endCallback){
 	})
 	
 	//video.play()
+	//clearCanvas()
 	endCallback()
 }
 
@@ -558,20 +541,11 @@ function startGame(){
 	ball.setLoseCallback(function(){updateLives.call(ball, ball.getLives)})
 	
  	//control.setWinCallback()
- 	control.setGameStartCallback(
- 		function() {updateScore(0)
-					updateRound(1)
-					updateLevel(1)
-					updateLives.call(ball, ball.getLives)
-				}
-	)
  	control.setLoseCallback(function(){ console.log("GAME OVER") })
  	control.setWinCallback(function(){
  		updateRound.call(control, control.getRound)
  		updateLevel.call(control, control.getLevel)
  	})
-
- 	control.restart()
 }
 
 function onLoad(){
@@ -608,14 +582,6 @@ Timer.prototype.loop = function(timer) {
 	}
 }
 
-function TimeWarning() {
-	return control.timer.getTime() <= RED_TIME
-}
-
-function LifesWarning() {
-	return ball.lives() <= RED_LIVES
-}
-
 function updateRound(round){
 	updateHTML.call(this, "lableRound", round)
 }
@@ -644,7 +610,7 @@ function updateHTML(lableName, innerHTML){
 }
 
 function die() { ball.die()}
-function restart() {control.restart()}
+function reset() { control.reset() }
 
 
 
