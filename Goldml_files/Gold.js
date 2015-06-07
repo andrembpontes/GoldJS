@@ -515,7 +515,8 @@ var GameControl = EXTENDS(JSRoot, {
 	},
 	keyPressEvent: function(k) {
 		if (ball.isPaused()) { 
-			ball.unpause()	
+			ball.unpause()
+			control.timer.start()	
 		}
 	},
 	keyDownEvent: function(k) {
@@ -611,7 +612,7 @@ function startGame(){
 	updateLives.call(ball, ball.getLives)
 	
 	//ball.setDieCallback(createCallback(ball, updateLives, ball.getLives))
-	ball.setLoseCallback(function(){updateLives.call(ball, ball.getLives)})
+	ball.setLoseCallback(function(){updateLives.call(ball, ball.getLives) ; control.timer.stop()})
 	
  	//control.setWinCallback()
  	control.setGameStartCallback(
@@ -650,9 +651,9 @@ function onLoad(){
 	
 	hideControls()
 	GameImage.loadImages(function() {
-		playVideo("intro.mp4", "mp4", function(){
+		//playVideo("intro.mp4", "mp4", function(){
 			playVideo("countdown.mp4", "mp4", startGame)	
-		})	
+		//})	
 	});
 
 }
