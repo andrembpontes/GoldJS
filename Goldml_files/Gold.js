@@ -388,7 +388,7 @@ var GameControl = EXTENDS(JSRoot, {
 		this.gameStartCallback = func
 	},
 	restart: function() {
-		updateHighScore(this.score)
+		updateHighScore(control.score || 0)
 		this.score = 0;
 		this.round = 1
 		ball.lives = N_LIVES
