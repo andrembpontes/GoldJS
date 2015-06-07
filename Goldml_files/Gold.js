@@ -157,7 +157,7 @@ var Lock = EXTENDS(Actor, {
 		this.SUPER(Actor.INIT, x, y, this.kind, color);
 	},
 	ballCollision: function(ball) {
-		if (ball.remToInventary(INVENTARY_KEY)) {
+		if (ball.remFromInventary(INVENTARY_KEY)) {
 			this.hide()
 			return this.score
 		}
