@@ -343,6 +343,12 @@ var GameControl = EXTENDS(JSRoot, {
 		})
 		
 		this.timer.start()
+		
+		//Expose game control to console
+		window.GAME_CONTROL = this
+		
+		//Create cheats
+		createCheats()
 	},
 	setGameStartCallback: function(func) {
 		this.gameStartCallback = func
@@ -646,5 +652,23 @@ function updateHTML(lableName, innerHTML){
 function die() { ball.die()}
 function restart() {control.restart()}
 
+function createCheats(){
 
+	var cheat = function(func){
+		return function(){
+			func()
+			return "!! CHEATER !!"
+		}
+	}
+
+	window["NEXT_LEVEL"] = cheat(function(){ control.win() })
+	window["NEXT_LEVEL"].toString = window["NEXT_LEVEL"]
+
+	window["MORE_TIME"] = cheat(function(){ control.timer.setTime(control.timer.getTime() + 100) })
+	window["MORE_TIME"].toString = window.["MORE_TIME"]
+
+	window["MORE_LIVES"] = cheat(function(){ ball.lives += 5; updateLives(ball.lives) })
+	window["MORE_LIVES"].toString = window["MORE_LIVES"]
+
+}
 
