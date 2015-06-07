@@ -388,6 +388,7 @@ var GameControl = EXTENDS(JSRoot, {
 		this.gameStartCallback = func
 	},
 	restart: function() {
+		updateHighScore(this.score)
 		this.score = 0;
 		this.round = 1
 		ball.lives = N_LIVES
@@ -604,10 +605,11 @@ function startGame(){
 	//Populate interface
 
 	updateTimer(START_TIME, function(){})
-	updateScore(0)
-	updateRound(1)
-	updateLevel(1)
-	updateLives.call(ball, ball.getLives)
+	updateHighScore(0)
+	//updateScore(0)
+	//updateRound(1)
+	//updateLevel(1)
+	//updateLives.call(ball, ball.getLives)
 	
 	//ball.setDieCallback(createCallback(ball, updateLives, ball.getLives))
 	ball.setLoseCallback(function(){updateLives.call(ball, ball.getLives) ; control.timer.stop()})
@@ -688,6 +690,10 @@ function TimeWarning() {
 
 function LifesWarning() {
 	return ball.lives() <= RED_LIVES
+}
+
+function updateHighScore(score) {
+	updateHTML.call(this, "lableHighScore", score)
 }
 
 function updateRound(round){
