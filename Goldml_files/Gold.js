@@ -3,6 +3,11 @@
 01234567890123456789012345678901234567890123456789012345678901234567890123456789
 */
 
+RESOURCES_ROOT = "http://anotherguy.likesyou.org/resources/"
+RESOURCES_VIDEO = RESOURCES_ROOT + "clip/"
+RESOURCES_IMG = RESOURCES_ROOT + "img/"
+RESOURCES_SOUND = RESOURCES_ROOT + "sound/"
+
 // GAME CONSTANTS
 START_LEVEL = 1;
 MAX_LEVEL = 2;
@@ -77,7 +82,7 @@ var Actor = EXTENDS(JSRoot, {
 	ballCollision: function(func){
 		if(this.ballCollisionCallback)
 			this.ballCollisionCallback()
-		
+
 		return null;
 	}
 });
@@ -379,6 +384,8 @@ var GameControl = EXTENDS(JSRoot, {
 		
 		//Create cheats
 		createCheats()
+
+		this.soundTrack = playSound("soundtrack.mp3")
 	},
 	setGameStartCallback: function(func) {
 		this.gameStartCallback = func
@@ -391,6 +398,9 @@ var GameControl = EXTENDS(JSRoot, {
 		this.currentLevel = START_LEVEL
 		this.newLevel(this.currentLevel)
 		this.gameStartCallback()
+		showControls()
+		this.soundTrack.play();
+		this.soundtrack.loop = true;
 	},
 	newLevel: function(currentLevel) {
 		this.timer.setTime(START_TIME)
@@ -545,6 +555,8 @@ var GameControl = EXTENDS(JSRoot, {
 		if (this.winCallback) this.winCallback()
 	},	
 	lose: function() {
+		this.soundTrack.stop();
+
 		if (this.loseCallback)this.loseCallback()
 		else this.restart()
 	}, 
@@ -558,6 +570,7 @@ var GameControl = EXTENDS(JSRoot, {
 
 // HTML FORM
 
+//TODO remove func
 function playCountdown(endCallback){
 	ctx = document.getElementById("canvas1").getContext("2d");
 	video = document.getElementById("countdown");
@@ -610,7 +623,7 @@ function startGame(){
 	)
  	control.setLoseCallback(function(){
  		clearInterval(control.animationInterval)
- 		
+ 		hideControls()
  		playVideo("game_over.mp4", "mp4", function(){
  			control.restart()
  		})
@@ -630,11 +643,16 @@ function onLoad(){
 	ctx = canvas.getContext("2d")
 
   	// load images an then run the game
-	GameImage.loadImages( startGame )/*function() {
+	
+	// GameImage.loadImages( startGame )
+	
+	hideControls()
+	GameImage.loadImages(function() {
 		playVideo("intro.mp4", "mp4", function(){
 			playVideo("countdown.mp4", "mp4", startGame)	
 		})	
-	});*/
+	});
+
 }
 
 Timer = function(startTime, timeOutCallback, timeCallback){
@@ -732,7 +750,7 @@ function createCheats(){
 
 function createImage(src, h, w){
 	var img = document.createElement("img")
-	img.src = "resources/img/" + src
+	img.src = RESOURCES_IMG + src
 	img.height = h
 	img.width = w
 	return img
@@ -785,10 +803,11 @@ VideoPlayer = function(src, type, ctx, fps, width, height, endCallback){
 	})
 }
 VideoPlayer.prototype.play = function(){ this.video.play() }
+VideoPlayer.prototype.getVideo = function() {return this.video }
 
 function playVideo(src, type, endCallback){
 	var vplayer = new VideoPlayer(
-			"resources/clip/" + src, 
+			RESOURCES_VIDEO + src, 
 			"video/" + type, 
 			ctx,
 			30,
@@ -796,8 +815,85 @@ function playVideo(src, type, endCallback){
 			canvas.height,
 			endCallback)
 	vplayer.play()
+	return vplayer;
 }
 
 function playSound(audio){
-	new Audio("resources/sound/" + audio).play()
+	var sound = new Audio(RESOURCES_SOUND + audio)
+	sound.play()
+	return sound;
+}
+
+/*
+Resource = function(name, onPlay, onEnd){
+	this.name = name
+	this.onPlay = onPlay
+	this.onEnd = onEnd
+}
+Resource.prototype.setOnPlayCallback = function(func){ this. onPlay = func }
+Resource.prototype.setOnEndCallback = function(func){ this. onEnd = func }
+Resource.prototype.play = function(func){ this.onPlay() }
+Resource.prototype.load = function(func){ this.onLoad() }
+Resource.prototype.getResource = function(){ return null }
+
+VideoResource = function(name, src, type, onPlay, onEnd){
+	Resource(name, onPlay, onEnd)
+	this.vplayer = new VideoPlayer(
+			RESOURCES_VIDEO + src, 
+			"video/" + type, 
+			ctx,
+			30,
+			canvas.width,
+			canvas.height,
+			onEnd)
+}
+VideoResource.prototype = Resource
+VideoResource.prototype.play = function(func){this.prototype.play(); this.vplayer.play()}
+VideoResource.prototype.getResource = function(){ return this.vplayer.getVideo() }
+
+SoundResource = function(name, src, onPlay, onEnd){
+	Resource(name, onPlay, onEnd)
+	this.sound = new Audio(RESOURCES_SOUND + src)
+	this.sound.addEventListener("ended", onEnd)
+}
+SoundResource.prototype = Resource
+SoundResource.prototype.play = function(func){this.prototype.play(); this.sound.play() }
+SoundResource.prototype.getResource = function(){ return this.sound }
+
+ImageResource = function(name, src, onPlay, onEnd){
+	Resource(name, onPlay, onEnd)
+	this.img = document.createElement("img")
+	this.img.src = RESOURCE_IMG + src
+}
+ImageResource.prototype.getResource = function(){ return this.img }
+
+ResourceManager = function(){
+	this.resources = {}
+	this.length = 0
+}
+ResourceManager.prototype.addResource = function(res){
+	if(!this.hasResource(res.name))
+		this.length++;
+
+	this.resources[res.name] = res
+}
+ResourceManager.prototype.play = function(name){this.resources[name].play()}
+ResourceManager.prototype.getResource = function(name) { return this.resources[name].getResource()}
+ResourceManager.prototype.hasResource = function(name) {
+	for(var x in this.resources)
+		if (x.name == name)
+			return true
+
+	return false
+}
+*/
+
+function hideControls(){
+	document.getElementById("controls1").style.display = "none"
+	document.getElementById("controls2").style.display = "none"
+}
+
+function showControls(){
+	document.getElementById("controls1").style.display = "initial"
+	document.getElementById("controls2").style.display = "initial"
 }
