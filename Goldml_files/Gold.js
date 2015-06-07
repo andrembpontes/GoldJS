@@ -400,7 +400,7 @@ var GameControl = EXTENDS(JSRoot, {
 		this.gameStartCallback()
 		showControls()
 		this.soundTrack.play();
-		this.soundtrack.loop = true;
+		this.soundTrack.loop = true;
 	},
 	newLevel: function(currentLevel) {
 		this.timer.setTime(START_TIME)
@@ -555,7 +555,7 @@ var GameControl = EXTENDS(JSRoot, {
 		if (this.winCallback) this.winCallback()
 	},	
 	lose: function() {
-		this.soundTrack.stop();
+		this.soundTrack.pause();
 
 		if (this.loseCallback)this.loseCallback()
 		else this.restart()
