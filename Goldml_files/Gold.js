@@ -665,7 +665,7 @@ function createCheats(){
 	window["NEXT_LEVEL"].toString = window["NEXT_LEVEL"]
 
 	window["MORE_TIME"] = cheat(function(){ control.timer.setTime(control.timer.getTime() + 100) })
-	window["MORE_TIME"].toString = window.["MORE_TIME"]
+	window["MORE_TIME"].toString = window["MORE_TIME"]
 
 	window["MORE_LIVES"] = cheat(function(){ ball.lives += 5; updateLives(ball.lives) })
 	window["MORE_LIVES"].toString = window["MORE_LIVES"]
