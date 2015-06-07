@@ -642,6 +642,8 @@ function onLoad(){
 	canvas = document.getElementById("canvas1")
 	ctx = canvas.getContext("2d")
 
+	printImg("loading.jpeg")
+
   	// load images an then run the game
 	
 	// GameImage.loadImages( startGame )
@@ -822,6 +824,13 @@ function playSound(audio){
 	var sound = new Audio(RESOURCES_SOUND + audio)
 	sound.play()
 	return sound;
+}
+
+function printImg(image){
+	var img = document.createElement("img")
+	img.src = RESOURCES_IMG + image
+	ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+	return ctx
 }
 
 /*
