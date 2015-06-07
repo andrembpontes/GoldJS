@@ -372,7 +372,6 @@ var GameControl = EXTENDS(JSRoot, {
 			control.timer.setTime(START_TIME)
 		},
 		function(){
-			//TODO: CHANGE TO CALLBACK
 			updateTimer(control.timer.getTime())
 		})
 				
@@ -445,7 +444,6 @@ var GameControl = EXTENDS(JSRoot, {
 	},
 	incScore: function(score){
 		this.score += score
-		//TODO: CHANGE TO CALLBACK 
 		updateScore(this.score)
 	},
 	loadLevel: function (level) {
@@ -569,30 +567,6 @@ var GameControl = EXTENDS(JSRoot, {
 });
 
 // HTML FORM
-
-//TODO remove func
-function playCountdown(endCallback){
-	ctx = document.getElementById("canvas1").getContext("2d");
-	video = document.getElementById("countdown");
-	
-	video.addEventListener('play', function() {
-	    var $this = this; //cache
-	    (function loop() {
-	      	if (!$this.paused && !$this.ended) {
-	        	ctx.drawImage($this, 0, 0, 630, 420);
-	        	setTimeout(loop, 1000 / 30); // drawing at 30fps
-	      	}
-	    })();
-	}, 0);
-	
-	video.addEventListener('ended', function(){
-		clearCanvas()
-		endCallback()
-	})
-	
-	//video.play()
-	endCallback()
-}
 
 function clearCanvas(){
 	var ctx = document.getElementById("canvas1").getContext("2d")
@@ -837,70 +811,6 @@ function printImg(image){
 	ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
 	return ctx
 }
-
-/*
-Resource = function(name, onPlay, onEnd){
-	this.name = name
-	this.onPlay = onPlay
-	this.onEnd = onEnd
-}
-Resource.prototype.setOnPlayCallback = function(func){ this. onPlay = func }
-Resource.prototype.setOnEndCallback = function(func){ this. onEnd = func }
-Resource.prototype.play = function(func){ this.onPlay() }
-Resource.prototype.load = function(func){ this.onLoad() }
-Resource.prototype.getResource = function(){ return null }
-
-VideoResource = function(name, src, type, onPlay, onEnd){
-	Resource(name, onPlay, onEnd)
-	this.vplayer = new VideoPlayer(
-			RESOURCES_VIDEO + src, 
-			"video/" + type, 
-			ctx,
-			30,
-			canvas.width,
-			canvas.height,
-			onEnd)
-}
-VideoResource.prototype = Resource
-VideoResource.prototype.play = function(func){this.prototype.play(); this.vplayer.play()}
-VideoResource.prototype.getResource = function(){ return this.vplayer.getVideo() }
-
-SoundResource = function(name, src, onPlay, onEnd){
-	Resource(name, onPlay, onEnd)
-	this.sound = new Audio(RESOURCES_SOUND + src)
-	this.sound.addEventListener("ended", onEnd)
-}
-SoundResource.prototype = Resource
-SoundResource.prototype.play = function(func){this.prototype.play(); this.sound.play() }
-SoundResource.prototype.getResource = function(){ return this.sound }
-
-ImageResource = function(name, src, onPlay, onEnd){
-	Resource(name, onPlay, onEnd)
-	this.img = document.createElement("img")
-	this.img.src = RESOURCE_IMG + src
-}
-ImageResource.prototype.getResource = function(){ return this.img }
-
-ResourceManager = function(){
-	this.resources = {}
-	this.length = 0
-}
-ResourceManager.prototype.addResource = function(res){
-	if(!this.hasResource(res.name))
-		this.length++;
-
-	this.resources[res.name] = res
-}
-ResourceManager.prototype.play = function(name){this.resources[name].play()}
-ResourceManager.prototype.getResource = function(name) { return this.resources[name].getResource()}
-ResourceManager.prototype.hasResource = function(name) {
-	for(var x in this.resources)
-		if (x.name == name)
-			return true
-
-	return false
-}
-*/
 
 function hideControls(){
 	document.getElementById("controls1").style.display = "none"
