@@ -370,15 +370,12 @@ var GameControl = EXTENDS(JSRoot, {
 		this.timer = new Timer(START_TIME, function(){
 			ball.die()
 			control.timer.setTime(START_TIME)
-			control.timer.start()
 		},
 		function(){
 			//TODO: CHANGE TO CALLBACK
 			updateTimer(control.timer.getTime())
 		})
-		
-		this.timer.start()
-		
+				
 		//Expose game control to console
 		window.GAME_CONTROL = this
 		
@@ -492,6 +489,7 @@ var GameControl = EXTENDS(JSRoot, {
 		return n
 	},
 	nextLevel: function(){
+		control.timer.stop()
 		this.currentLevel++;
 		if (this.currentLevel > MAX_LEVEL) {
 			this.currentLevel = START_LEVEL
