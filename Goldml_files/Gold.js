@@ -576,19 +576,13 @@ function clearCanvas(){
 
 function startGame(){
   	NEW(GameControl);
+
 	//Populate interface
 
 	updateTimer(START_TIME, function(){})
 	updateHighScore(0)
-	//updateScore(0)
-	//updateRound(1)
-	//updateLevel(1)
-	//updateLives.call(ball, ball.getLives)
-	
-	//ball.setDieCallback(createCallback(ball, updateLives, ball.getLives))
 	ball.setLoseCallback(function(){updateLives.call(ball, ball.getLives) ; control.timer.stop()})
 	
- 	//control.setWinCallback()
  	control.setGameStartCallback(
  		function() {updateScore(0)
 					updateRound(1)
@@ -625,9 +619,9 @@ function onLoad(){
 	
 	hideControls()
 	GameImage.loadImages(function() {
-		//playVideo("intro.mp4", "mp4", function(){
+		playVideo("intro.mp4", "mp4", function(){
 			playVideo("countdown.mp4", "mp4", startGame)	
-		//})	
+		})	
 	});
 
 }
