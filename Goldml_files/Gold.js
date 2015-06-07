@@ -26,7 +26,7 @@ RED_TIME = 15
 
 // GLOBAL VARIABLES
 
-var ctx, empty, ball, world, control, animationInterval
+var ctx, empty, ball, world, control, animationInterval, canvas
 
 // ACTORS
 
@@ -71,8 +71,14 @@ var Actor = EXTENDS(JSRoot, {
 	},
 	collision: function(whoHit){
 	},
-	ballCollision: function(ball) {
-		return null
+	setBallCollisionCallback: function(func){
+		this.ballCollisionCallback = func;
+	},
+	ballCollision: function(func){
+		if(this.ballCollisionCallback)
+			this.ballCollisionCallback()
+		
+		return null;
 	}
 });
 
@@ -95,11 +101,15 @@ var Boundary = EXTENDS(Actor, {
 var Brick = EXTENDS(Actor, {
 	kind: "Brick",
 	countable: true,
+	soundOnHide: "brick.wav",
 	INIT: function(x, y, color) {
 		this.SUPER(Actor.INIT, x, y, this.kind, color);
 		this.score = SCORE_BRICK
 	},
 	ballCollision: function(ball) {
+		if(this.ballCollisionCallback)
+			this.ballCollisionCallback()
+
 		if (ball.getColor() == this.getColor()) {
 			this.hide() 
 			return this.score
@@ -113,16 +123,23 @@ var Bucket = EXTENDS(Actor, {
 		this.SUPER(Actor.INIT, x, y, this.kind, color);
 	},
 	ballCollision: function(ball) {
+		if(this.ballCollisionCallback)
+			this.ballCollisionCallback()
+
 		return ball.setColor(this.color)
 	}
 })
 
 var Devil = EXTENDS(Actor, {
 	kind: "Devil",
+	soundOnBallCollision: "devil.wav",
 	INIT: function(x, y, color) {
 		this.SUPER(Actor.INIT, x, y, this.kind, color);
 	},
 	ballCollision: function(ball) {
+		if(this.ballCollisionCallback)
+			this.ballCollisionCallback()
+
 		ball.die()
 	}
 })
@@ -133,6 +150,9 @@ var Inverter = EXTENDS(Actor, {
 		this.SUPER(Actor.INIT, x, y, this.kind, color);
 	},
 	ballCollision: function() {
+		if(this.ballCollisionCallback)
+			this.ballCollisionCallback()
+
 		control.invertControls()
 	}
 })
@@ -144,6 +164,9 @@ var Key = EXTENDS(Actor, {
 		this.SUPER(Actor.INIT, x, y, this.kind, color);
 	},
 	ballCollision: function(ball) {
+		if(this.ballCollisionCallback)
+			this.ballCollisionCallback()
+
 		ball.addToInventary(INVENTARY_KEY)
 		this.hide()
 		return this.score
@@ -157,6 +180,9 @@ var Lock = EXTENDS(Actor, {
 		this.SUPER(Actor.INIT, x, y, this.kind, color);
 	},
 	ballCollision: function(ball) {
+		if(this.ballCollisionCallback)
+			this.ballCollisionCallback()
+
 		if (ball.remFromInventary(INVENTARY_KEY)) {
 			this.hide()
 			return this.score
@@ -167,10 +193,14 @@ var Lock = EXTENDS(Actor, {
 var Gold = EXTENDS(Actor, {
 	countable: true,
 	kind: "Gold",
+	soundOnHide: "gold.wav",
 	INIT: function(x, y, color) {
 		this.SUPER(Actor.INIT, x, y, this.kind, color);
 	},
 	ballCollision: function(ball) {
+		if(this.ballCollisionCallback)
+			this.ballCollisionCallback()
+
 		if(control.getActorCount(Brick.kind) == 0){
 			this.hide()
 			return this.score
@@ -435,10 +465,17 @@ var GameControl = EXTENDS(JSRoot, {
 		var n = NEW(globalByName(gi.kind), x, y, gi.color)
 		n.setHideCallback(function(){
 			control.decActorCount(this.kind)
+			if(this.soundOnHide)
+				playSound(this.soundOnHide)
 		})
 		
 		n.setShowCallback(function(){
 			control.incActorCount(this.kind)
+		})
+
+		n.setBallCollisionCallback(function(){
+			if(this.soundOnBallCollision)
+				playSound(this.soundOnBallCollision)
 		})
 		
 		n.show()
@@ -509,7 +546,7 @@ var GameControl = EXTENDS(JSRoot, {
 	},	
 	lose: function() {
 		if (this.loseCallback)this.loseCallback()
-		this.restart()
+		else this.restart()
 	}, 
 	calcEndLevelBonus: function() {
 		return control.timer.getTime() * SCORE_UNUSED_SECOND 
@@ -571,7 +608,15 @@ function startGame(){
 					updateLives.call(ball, ball.getLives)
 				}
 	)
- 	control.setLoseCallback(function(){ console.log("GAME OVER") })
+ 	control.setLoseCallback(function(){
+ 		clearInterval(control.animationInterval)
+ 		
+ 		playVideo("game_over.mp4", "mp4", function(){
+ 			control.restart()
+ 		})
+ 		console.log("GAME OVER")
+ 	})
+
  	control.setWinCallback(function(){
  		updateRound.call(control, control.getRound)
  		updateLevel.call(control, control.getLevel)
@@ -581,12 +626,16 @@ function startGame(){
 }
 
 function onLoad(){
-  	// load images an then run the game
-	GameImage.loadImages(function() {
-		playCountdown(startGame)		
-	});
-}
+	canvas = document.getElementById("canvas1")
+	ctx = canvas.getContext("2d")
 
+  	// load images an then run the game
+	GameImage.loadImages( startGame )/*function() {
+		playVideo("intro.mp4", "mp4", function(){
+			playVideo("countdown.mp4", "mp4", startGame)	
+		})	
+	});*/
+}
 
 Timer = function(startTime, timeOutCallback, timeCallback){
 	this.time = startTime;
@@ -597,7 +646,7 @@ Timer = function(startTime, timeOutCallback, timeCallback){
 }
 Timer.prototype.setTime = function(time) { this.time = time; this.timeCallback() }
 Timer.prototype.getTime = function() {return this.time }
-Timer.prototype.pause = function() { this.pause = true }
+Timer.prototype.stop = function() { this.pause = true }
 Timer.prototype.start = function() { this.pause = false; this.loop(this) }
 Timer.prototype.incTime = function(time) { this.time += time }
 Timer.prototype.loop = function(timer) {
@@ -635,7 +684,11 @@ function updateTimer(time){
 }
 
 function updateLives(lives){
-	updateHTML.call(this,"lableLives", lives)
+//	updateHTML.call(this,"lableLives", lives)
+
+//	var l = document.getElementById("lableLives")
+//	l.appendChild(createImage("resources/img/lives.gif-c200", 30, 30))
+	populateWithImgs(document.getElementById("lives"), "lives.gif", 30, 30, lives.call(this))
 }
 
 function updateScore(score){
@@ -670,5 +723,81 @@ function createCheats(){
 	window["MORE_LIVES"] = cheat(function(){ ball.lives += 5; updateLives(ball.lives) })
 	window["MORE_LIVES"].toString = window["MORE_LIVES"]
 
+	window["PAUSE_TIME"] = cheat(function(){ control.timer.stop() })
+	window.PAUSE_TIME.toString = window.PAUSE_TIME
+	
+	window["RESUME_TIME"] = cheat(function(){ control.timer.start()})
+	window.RESUME_TIME.toString = window.RESUME_TIME
 }
 
+function createImage(src, h, w){
+	var img = document.createElement("img")
+	img.src = "resources/img/" + src
+	img.height = h
+	img.width = w
+	return img
+}
+
+function populateWithImgs(elem, src, h, w, count){
+	while(count > elem.getElementsByTagName("img").length){
+		var img = createImage(src, h, w)
+		img.style = "padding-left: 2px"
+		elem.appendChild(img)
+	}
+	var col
+	while(count < (col = elem.getElementsByTagName("img")).length )
+		elem.removeChild(col[col.length-1])
+}
+
+VideoPlayer = function(src, type, ctx, fps, width, height, endCallback){
+	this.ctx = ctx
+	this.fps = fps
+
+	this.video = document.createElement("video")
+	this.video.width = width
+	this.video.height = height
+	this.video.style.display = "none"
+	this.video.innerHTML = "Your browser does not support the video tag."
+
+	this.source = document.createElement("source")
+	this.source.src = src
+	this.source.type = type
+
+	this.video.appendChild(this.source)
+
+	this.endCallback = endCallback;
+
+	var $this = this
+	
+	this.video.addEventListener('play', function() {
+	    //var $this = this; //cache
+	    (function loop() {
+	      	if (!$this.video.paused && !$this.video.ended) {
+	        	$this.ctx.drawImage($this.video, 0, 0, $this.video.width, $this.video.height);
+	        	setTimeout(loop, 1000 / 30); // drawing at 30fps
+	      	}
+	    })();
+	}, 0);
+	
+	this.video.addEventListener('ended', function(){
+		clearCanvas()
+		endCallback()
+	})
+}
+VideoPlayer.prototype.play = function(){ this.video.play() }
+
+function playVideo(src, type, endCallback){
+	var vplayer = new VideoPlayer(
+			"resources/clip/" + src, 
+			"video/" + type, 
+			ctx,
+			30,
+			canvas.width,
+			canvas.height,
+			endCallback)
+	vplayer.play()
+}
+
+function playSound(audio){
+	new Audio("resources/sound/" + audio).play()
+}

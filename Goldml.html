@@ -67,7 +67,7 @@ para alguns aspetos da implementa��o que possam ser menos �bvios para o av
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
    <title>Linguagens e Ambientes de Programa��o (2014/2015) [Eng.Inf. - DI/FCT/UNL] - 3� projeto pr�tico (Javascript)</title>
-   
+
    <script type="text/javascript" src="./Goldml_files/Gold0.js"></script>
    <script type="text/javascript" src="./Goldml_files/Gold.js"></script>
 </head>
@@ -82,24 +82,29 @@ background-size       : cover;">
 </br>
 <p><b><h1 font-family="Courier New">Gold</h1></b><i> by</i> Andre P. (666), Goncalo M. (43178)
 </p><form name="form1">
-	<canvas id="canvas1" width="630" height="420" style="border:1px solid #000000;">
-        Your browser doesn't support the HTML5 CANVAS tag.
-    </canvas> <br>
-    
+  <table>
+    <td width=630>
+      <div align="left" style="padding-bottom:3px"><lable id="lives"></lable></div>
+      
+      <canvas id="canvas1" width="630" height="420" style="border:1px solid #000000;">
+          Your browser doesn't support the HTML5 CANVAS tag.
+      </canvas> <br>
+      
       <video width="630" height="420" id=countdown style = "display:none">
         <source src="Goldml_files/countdown.mp4" type="video/mp4">
-      Your browser does not support the video tag.
+        Your browser does not support the video tag.
       </video>
+    </td>
+  </table>
     
-    <table border="0"  width="630">
-    	<tr>
-			<td><input type="button" class="button" name="button1" value="Die" size="10" style="width:315px; height:25px" onclick="die()"></td>
-			<td><input type="button" class="button" name="button2" value="Restart" size="10" style="width:315px; height:25px" onclick="restart()"></td>
-		</tr>
-		<tr><td colspan="2"></br></td></tr>
+  <table border="0"  width="630">
+  	<tr>
+  		<td><input type="button" class="button" name="button1" value="Die" size="10" style="width:315px; height:25px" onclick="die()"></td>
+  		<td><input type="button" class="button" name="button2" value="Restart" size="10" style="width:315px; height:25px" onclick="restart()"></td>
+  	</tr>
+  	<tr><td colspan="2"></br></td></tr>
     <tr><td>Score: <lable id = "lableScore"></lable></td><td align="right">Round: <lable id = "lableRound"></lable></td></tr>
-    <tr><td>Lifes: <lable id = "lableLives"></lable></td><td align="right">Level: <lable id = "lableLevel"></lable></td></tr>
-		<tr><td colspan="2"><p>Time: <lable id = "lableTime"></lable></td></tr>
+    <tr><td>Time: <lable id = "lableTime"></lable></td><td align="right">Level: <lable id = "lableLevel"></lable></td></tr>
 	</table>
 </form>
 </div>
